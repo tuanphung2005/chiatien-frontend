@@ -9,16 +9,6 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { useRouter } from 'expo-router';
 import { Icon } from '@/components/ui/icon';
 
-import {
-    AlertDialog,
-    AlertDialogContent,
-    AlertDialogHeader,
-    AlertDialogBody,
-    AlertDialogBackdrop,
-    AlertDialogFooter,
-    AlertDialogCloseButton
-} from '@/components/ui/alert-dialog';
-import { Heading } from '@/components/ui/heading';
 
 const FeatureCard = ({ iconSvg: IconSvg, name, desc }: any) => {
     return (
@@ -37,10 +27,6 @@ const FeatureCard = ({ iconSvg: IconSvg, name, desc }: any) => {
 
 export default function Home() {
     const router = useRouter();
-    const [showAlertDialog, setShowAlertDialog] = React.useState(false);
-
-    const handleClose = () => setShowAlertDialog(false);
-
 
 
     return (
@@ -61,34 +47,10 @@ export default function Home() {
                             router.push('/tabs/tab1');
                         }}
                     >
-                        <ButtonText>Explore Tab Navigation</ButtonText>
+                        <ButtonText>tab nav</ButtonText>
                     </Button>
                 </Box>
                 <Box className="flex-1 justify-center items-center h-[20px] w-[300px] lg:h-[160px] lg:w-[400px]">
-                    <Button onPress={() => setShowAlertDialog(true)}>
-                        <ButtonText>Show alert</ButtonText>
-                    </Button>
-
-                    <AlertDialog isOpen={showAlertDialog} onClose={handleClose} size ="md">
-                        <AlertDialogBackdrop />
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <Heading>Title</Heading>
-                            </AlertDialogHeader>
-
-                            <AlertDialogBody>
-                                <Text>
-                                    this is a cool text
-                                </Text>
-                            </AlertDialogBody>
-
-                            <AlertDialogFooter>
-                                <Button onPress={handleClose}>
-                                    <ButtonText>Close</ButtonText>
-                                </Button>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
 
                 </Box>
             </Box>
