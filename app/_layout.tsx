@@ -9,18 +9,46 @@ import {
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
-import { useColorScheme } from '@/components/useColorScheme';
-import { Slot, usePathname } from 'expo-router';
+import { Slot, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Fab, FabIcon } from '@/components/ui/fab';
-import { MoonIcon, SunIcon } from '@/components/ui/icon';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { View } from 'react-native';
+import { Spinner } from '@/components/ui/spinner';
 
 export {
-  // Catch any errors thrown by the Layout component.
   ErrorBoundary,
 } from 'expo-router';
 
 SplashScreen.preventAutoHideAsync();
+
+// Auth guard component
+function AuthGuard({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    const inAuthGroup = segments[0] === '(auth)';
+
+    if (!isAuthenticated && !inAuthGroup) {
+      router.replace('/(auth)/login' as any);
+    } else if (isAuthenticated && inAuthGroup) {
+      router.replace('/(tabs)' as any);
+    }
+  }, [isAuthenticated, isLoading, segments]);
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white">
+        <Spinner size="large" />
+      </View>
+    );
+  }
+
+  return <>{children}</>;
+}
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -28,8 +56,6 @@ export default function RootLayout() {
     ...FontAwesome.font,
   });
 
-  const [styleLoaded, setStyleLoaded] = useState(false);
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
     if (error) throw error;
   }, [error]);
@@ -39,29 +65,28 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [loaded]);
+
+  if (!loaded) {
+    return null;
+  }
+
   return <RootLayoutNav />;
 }
 
 function RootLayoutNav() {
-  const pathname = usePathname();
-  const [colorMode, setColorMode] = useState<'light' | 'dark'>('light');
+  // Light mode for bright colors
+  const [colorMode] = useState<'light' | 'dark'>('light');
 
   return (
-    <GluestackUIProvider mode={colorMode}>
-      <ThemeProvider value={colorMode === 'dark' ? DarkTheme : DefaultTheme}>
-        <Slot />
-        {pathname === '/' && (
-          <Fab
-            onPress={() =>
-              setColorMode(colorMode === 'dark' ? 'light' : 'dark')
-            }
-            className="m-6"
-            size="lg"
-          >
-            <FabIcon as={colorMode === 'dark' ? MoonIcon : SunIcon} />
-          </Fab>
-        )}
-      </ThemeProvider>
-    </GluestackUIProvider>
+    <AuthProvider>
+      <GluestackUIProvider mode={colorMode}>
+        <ThemeProvider value={DefaultTheme}>
+          <AuthGuard>
+            <Slot />
+          </AuthGuard>
+          <StatusBar style="dark" />
+        </ThemeProvider>
+      </GluestackUIProvider>
+    </AuthProvider>
   );
 }
